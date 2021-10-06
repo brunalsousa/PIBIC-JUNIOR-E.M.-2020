@@ -1,4 +1,4 @@
-final int END = 35; //<>// //<>// //<>// //<>// //<>//
+final int END = 35; //<>// //<>// //<>// //<>//
 final int SHIFT = 16;
 
 class Componente {
@@ -69,6 +69,7 @@ class Componente {
       xAbs = min.x;
       yAbs = min.y;
     }
+      println(xAbs, yAbs);
     x = min.x;
     y = min.y;
     recorta();
@@ -96,6 +97,7 @@ class Componente {
   void move(int x, int y) {
     xAbs = pai.xAbs + x;
     yAbs = pai.yAbs + y;
+      println(xAbs, yAbs);
     recorta();
     this.x = x;
     this.y = y;
@@ -112,30 +114,32 @@ class Componente {
 
   void recorta() {
     if (pai == null) {
-      xRecorte = xAbs;
-      yRecorte = yAbs;
-      largRecorte = larg;
-      altuRecorte = altu;
+      xRecorte = Raiz.xEscala(xAbs);
+      yRecorte = Raiz.yEscala(yAbs);
+      largRecorte = round(larg * Raiz.escala);
+      altuRecorte = round(altu * Raiz.escala);
     } else {
-      xRecorte = max(xAbs, pai.xRecorte);
-      yRecorte = max(yAbs, pai.yRecorte);
-      largRecorte = min(xAbs + larg, pai.xRecorte + pai.largRecorte) - xRecorte;
-      altuRecorte = min(yAbs + altu, pai.yRecorte + pai.altuRecorte) - yRecorte;
+      xRecorte = max(Raiz.xEscala(xAbs), pai.xRecorte);
+      yRecorte = max(Raiz.yEscala(yAbs), pai.yRecorte);
+      largRecorte = min(Raiz.xEscala(xAbs + larg), pai.xRecorte + pai.largRecorte) - xRecorte;
+      altuRecorte = min(Raiz.yEscala(yAbs + altu), pai.yRecorte + pai.altuRecorte) - yRecorte;
     }
   }
 
   void redesenha() {
     if (visivel) { 
-      clip(xRecorte, yRecorte, largRecorte+1, altuRecorte+1);
+      clip(xRecorte, yRecorte, largRecorte + 1, altuRecorte + 1);
       pushMatrix();
-      translate(xAbs, yAbs);
+      translate(Raiz.xDesloc + xAbs * Raiz.escala, Raiz.yDesloc + yAbs * Raiz.escala);
+      scale(Raiz.escala);
       atualiza();
       popMatrix();
       for (Componente c : componentes)
         c.redesenha();
-      clip(xRecorte, yRecorte, largRecorte+1, altuRecorte+1);
+      clip(xRecorte, yRecorte, largRecorte + 1, altuRecorte + 1);
       pushMatrix();
-      translate(xAbs, yAbs);
+      translate(Raiz.xDesloc + xAbs * Raiz.escala, Raiz.yDesloc + yAbs * Raiz.escala);
+      scale(Raiz.escala);
       atualizaContorno();
       popMatrix();
     }
@@ -691,7 +695,7 @@ class SuporteDialogo extends Componente {
   private Componente modalAnterior;
 
   SuporteDialogo(Componente pai) {
-    super(pai, (width-50)/2, (height-40)/2, 50, 40);
+    super(pai, round((Raiz.largura-50)/2), round((Raiz.altura-40)/2), 50, 40);
   }
 
   void visivel(boolean b) {
@@ -726,7 +730,6 @@ class PainelTitulo extends Rotulo {
 
   void forma() {
     forma(pai, 0, 0, pai.larg, altu);
-    //rotuloTitulo.forma(pai, 2, 0, pai.larg - botaoFechar.larg, botaoFechar.larg);  
     botaoFechar.move(pai.larg - botaoFechar.larg, 0);
   }
   
@@ -740,7 +743,8 @@ class Dialogo extends Componente {
   PainelTitulo painelTitulo;
   
   Dialogo(String titulo) {
-    super(new SuporteDialogo(Raiz.igu), (width-50)/2, (height-40)/2, 50, 40);
+    super(new SuporteDialogo(Raiz.igu), round((Raiz.largura-50)/2), 
+          round((Raiz.altura-40)/2), 50, 40);
     painelTitulo = new PainelTitulo(titulo, this.pai);
     visivel(false);
   }
@@ -771,7 +775,9 @@ class Dialogo extends Componente {
       maxX = 80 - minX;
     if (maxY + minY < 60) 
       maxY = 60 - maxY;
-    pai.forma(pai.pai, (width - (minX + maxX))/2, (height - (minY + maxY))/2 - painelTitulo.altu, minX + maxX, minY + maxY + painelTitulo.altu);
+    pai.forma(pai.pai, round((Raiz.largura - (minX + maxX))/2), 
+              round((Raiz.altura - (minY + maxY))/2 - painelTitulo.altu), 
+              minX + maxX, minY + maxY + painelTitulo.altu);
     forma(pai, 0, painelTitulo.altu, minX + maxX, minY + maxY);
     painelTitulo.forma();
   }
@@ -793,12 +799,25 @@ class Dialogo extends Componente {
 }
 
 class IGU extends Componente {
-
+  
   IGU() {
     super(0, 0, width - 1, height - 1);
+    iniciaIGU(width, height);
+  }
+
+  IGU(float largura, float altura) {
+    super(0, 0, width - 1, height - 1);
+    iniciaIGU(largura, altura);
+  }
+  
+  void iniciaIGU(float largura, float altura) {
+    Raiz.larguraReal = width;
+    Raiz.alturaReal = height;
+    Raiz.tamanho(largura, altura);
     Raiz.igu = this;
     Raiz.modal = this;
     Raiz.alturaMinima = int(textAscent() + textDescent());
+    forma(null, 0, 0, (int)largura, (int)altura);
   }
 
   Componente componenteNoPonto(int x, int y) {
@@ -834,6 +853,14 @@ static class Raiz {
   static boolean control = false;
   static Componente modal = null;
   static int alturaMinima;
+  static int larguraReal;
+  static int alturaReal;
+  
+  static float escala = 1;
+  static float xDesloc = 0;
+  static float yDesloc = 0;
+  static float largura;
+  static float altura;
 
   static void mudaFoco(Componente c) {
     if (c != null && componenteComFoco != c && c.podeReceberFoco && c.visivel) {
@@ -842,6 +869,25 @@ static class Raiz {
       c.ganhouFoco(componenteComFoco);
       componenteComFoco = c;
     }
+  }
+
+  static void tamanho(float largura, float altura) {
+    Raiz.largura = largura;
+    Raiz.altura = altura;
+    float dx = larguraReal / largura;
+    float dy = alturaReal / altura;
+    escala = min(dx, dy);
+    xDesloc = (larguraReal - largura * escala)/2;
+    yDesloc = (alturaReal - altura * escala)/2;
+    println(escala, xDesloc, yDesloc);
+  }
+  
+  static int xEscala(int x) {
+    return round(Raiz.xDesloc + x * Raiz.escala);
+  }
+  
+  static int yEscala(int y) {
+    return round(Raiz.yDesloc + y * Raiz.escala);
   }
 
   static void mouseApertou(int botao, int x, int y) {
