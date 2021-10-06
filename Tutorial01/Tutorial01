@@ -1,13 +1,13 @@
 IGU principal;
 
 void setup() {
-  size(1024, 768);
+  size(600, 600);
 
   // A classe IGU é o componente principal que ocupa a área toda da aplicação.
-  principal = new IGU();
+  principal = new IGU(1024,768);
 
   // O Painel é um componente, onde componentes (Botões, Rótulos, Entradas e outros Paineis) podem ser inseridos.
-  Painel p = new Painel(principal, 5, 5, width - 10, height - 10);
+  Painel p = new Painel(principal, 5, 5, (int)Raiz.largura - 10, (int)Raiz.altura - 10);
   
   // A classe Rótulo pode ser usada para mostrar textos fixos durante a execução de um programa.
   new Rotulo("Exemplo de Texto Fixo", p, 5, 5, 220, 30);
