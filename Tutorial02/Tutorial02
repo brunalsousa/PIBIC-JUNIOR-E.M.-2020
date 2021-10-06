@@ -28,7 +28,7 @@ void setup() {
   // A classe Principal, descedente de IGU, é o componente principal que ocupa a área toda da aplicação.
   principal = new Principal();
 
-  Painel p = new Painel(principal, 5, 5, width - 10, height - 10);
+  Painel p = new Painel(principal, 5, 5, (int)Raiz.largura - 10, (int)Raiz.altura - 10);
   
   new Rotulo("A cada ação, observe o console do Processing.", p, 5, 5, 280, 30);
 
